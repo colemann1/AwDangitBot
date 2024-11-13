@@ -1,6 +1,5 @@
 
 
-
 class Database():
 
     def GetBalance(id):

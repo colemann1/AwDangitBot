@@ -1,7 +1,8 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from api_client import Database
+from libraries.ApiClient import Database
+from libraries.GameViews import RockPaperScissors
 
 ##Views
 class ChallengeGamesList(discord.ui.View):
@@ -35,6 +36,9 @@ class ChallengeAccept(discord.ui.View):
         else:
             await interaction.response.send_message(content=f"You are not {self.target.display_name}!",ephemeral=True)
 
+
+
+##Main class
 class ChallengeHandler(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -46,19 +50,21 @@ class ChallengeHandler(commands.Cog):
 
     @app_commands.command(name="challenge",description="Challenge a user to a game!")
     @app_commands.describe(user="The user being challenged",wager="How many chips you are betting")
-    async def challenge(self, interaction: discord.Interaction, user: discord.User, wager:app_commands.Range[int, -1, 1000000]=-1):
+    async def challenge(self, interaction: discord.Interaction, user: discord.User, wager:app_commands.Range[int, 0, 1000000]=0):
         player1 = interaction.user
         player2 = user
+        winner:discord.User = None
         wagermsg = ""
+        wagervalue = ""
         gameChoice = None
         player1_bal = Database.GetBalance(player1.id)
         player2_bal = Database.GetBalance(player2.id)
         if wager == 1:
             wagermsg = " for **1 chip**"
+            wagervalue = "1 chip"
         elif wager >= 2:
             wagermsg = f" for **{wager} chips**"
-        elif wager < 0:
-            wagermsg = " no, you are dumb, bad, badababdsabdsbabdbdsabdbsbsabasbsa chips"
+            wagervalue = f"{wager} chips"
 
         ##Error checks
         if interaction.user.id == user.id:
@@ -83,51 +89,33 @@ class ChallengeHandler(commands.Cog):
         ##Second menu success
         if await challengeAcceptView.wait() == False:
             ##GAME SELECTION LOGIC
-            await interaction.channel.send(f"game start, test complete.\nChallenger: {player1.name}\nTarget: {player2.name}\nGame type: {gameChoice}\nWager: {wager}")
-
-
-        # match game.value:
-        #     case 1: #Rock Paper Scissors
-        #         mainmsg:discord.Message
-        #         player_choices = {}
-        #         rpsselect = Select(options=[
-        #             discord.SelectOption(label="Rock",value=1),
-        #             discord.SelectOption(label="Paper",value=2),
-        #             discord.SelectOption(label="Scissors",value=3)
-        #         ],placeholder="What is your choice?")
-
-        #         async def player2_choice(interaction: discord.Interaction):
-        #             if (interaction.user.id != player2.id):
-        #                 await interaction.response.send_message(f"You are not {player2.display_name}!",ephemeral=True)
-        #                 return
-        #             await interaction.response.send_message(f"Pick your move:", view=rpsview, ephemeral=True)
-        #             await mainmsg.edit(content=f"{player2.display_name} is picking their option...")
-        #         async def choice_selected(interaction: discord.Interaction):
-        #             player_choices[interaction.user] = rpsselect.values[0]
-        #             print(player_choices)
-        #             if len(player_choices) == 1:
-        #                 rpsbutton = Button(label="Challenge Accepted!", style=discord.ButtonStyle.primary)
-        #                 rpsbutton.callback = player2_choice
-        #                 rpschallenge = View()
-        #                 rpschallenge.add_item(rpsbutton)
-        #                 await interaction.response.defer()
-        #                 mainmsg = await interaction.followup.send(content=f"{player2.mention}, {interaction.user.display_name} is challenging you to a game of Rock Paper Scissors! do you accept?", view=rpschallenge,wait=True)
-        #             elif len(player_choices) >= 2:
-        #                 await interaction.response.send_message(f"{player1.mention}'s choice was {player_choices[player1]}, and {player2.mention} was {player_choices[player2]}!")
-        #                 await interaction.followup.delete_message(mainmsg.id)
-
-                
-        #         rpsselect.callback = choice_selected
-        #         rpsview = View()
-        #         rpsview.add_item(rpsselect)
-        #         await interaction.response.send_message(f"Challenging {user.display_name}!", view=rpsview, ephemeral=True)
-
+            if gameChoice == "Rock Paper Scissors":
+                rpsEmbed = discord.Embed(title="Rock Paper Scissors!",color=0xaf7ffb,description=wagermsg)
+                rpsEmbed.add_field(name=f"{player1.display_name}: thinking...",value="",inline=False)
+                rpsEmbed.add_field(name=f"{player2.display_name}: thinking...",value="",inline=False)
+                rpsView = RockPaperScissors(player1,player2,rpsEmbed)
+                await interaction.channel.send(embed=rpsEmbed,view=rpsView)
+                await rpsView.wait()
+                winner = rpsView.winner
+                #construct winning message
+                if rpsView.winner is not None:
+                    gameResults = discord.Embed(title="Game Results:",color=0x334bde,description=f"{player1.display_name}: {rpsView.user1_choice}\n{player2.display_name}: {rpsView.user2_choice}\n**{winner.display_name} Wins!**")
+                    gameResults.set_thumbnail(url=winner.avatar.url)
+                else:
+                    gameResults = discord.Embed(title="Game Results:",color=0x334bde,description=f"{player1.display_name}: {rpsView.user1_choice}\n{player2.display_name}: {rpsView.user2_choice}\n**It's a Tie!**")
             
+            ##Display balance changes
+            if wager != 0 and winner is not None:
+                if winner.id == player1.id:
+                    gameResults.add_field(name="Balance Changes:",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
+                else:
+                    gameResults.add_field(name="Balance Changes:",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
+
+            ##Send final game announcement msg    
+            await interaction.channel.send(content=f"## {gameChoice}!\n**{player1.mention}** vs **{player2.mention}**",embed=gameResults)
 
 
-        #await interaction.response.send_message(f"{interaction.user.mention} challenges {user.mention} to a game of {game.name}")
 
 
-    
 async def setup(bot):
     await bot.add_cog(ChallengeHandler(bot))
