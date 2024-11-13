@@ -5,7 +5,7 @@ from discord.ext import commands
 import asyncio
 
 #Imports bot token from .env
-load_dotenv()
+load_dotenv(".env")
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 
 #Creates bot with set intents
