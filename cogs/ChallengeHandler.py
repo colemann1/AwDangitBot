@@ -70,6 +70,9 @@ class ChallengeHandler(commands.Cog):
         if interaction.user.id == user.id:
             await interaction.response.send_message(content="You cannot challenge yourself!",ephemeral=True)
             return
+        elif user.bot:
+            await interaction.response.send_message(content="You cannot challenge a bot!",ephemeral=True)
+            return
         elif player1_bal < wager:
             await interaction.response.send_message(content=f"You do not have enough chips for that!\nBalance: {player1_bal}",ephemeral=True)
             return
@@ -107,9 +110,9 @@ class ChallengeHandler(commands.Cog):
             ##Display balance changes
             if wager != 0 and winner is not None:
                 if winner.id == player1.id:
-                    gameResults.add_field(name="Balance Changes:",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
+                    gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
                 else:
-                    gameResults.add_field(name="Balance Changes:",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
+                    gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
 
             ##Send final game announcement msg    
             await interaction.channel.send(content=f"## {gameChoice}!\n**{player1.mention}** vs **{player2.mention}**",embed=gameResults)
