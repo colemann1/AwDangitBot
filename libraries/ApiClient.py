@@ -17,3 +17,23 @@ class Database():
             return 269
         else:
             return 100
+        
+    def SetBalance(id,balance):
+        pass
+
+    def GetLastLogin(id):
+        pass
+
+    def SetLastLogin(id):
+        pass
+
+    def IncGameWins(id,gameid):
+        pass
+
+    def GetGameWins(id):
+        pass
+
+    def GetChipWLRatio(id):
+        pass
+
+
