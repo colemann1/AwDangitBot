@@ -1,8 +1,9 @@
+from datetime import datetime
 
 
-class Database():
+class Database:
 
-    def GetBalance(id):
+    async def GetBalance(id):
         if id == 560123152349528066:
             #main acc
             return 1000
@@ -18,22 +19,23 @@ class Database():
         else:
             return 100
         
-    def SetBalance(id,balance):
+    async def SetBalance(id,balance):
         pass
 
-    def GetLastLogin(id):
+    async def GetLastLogin(id):
+        date = datetime(2024,11,15,20,0)
+        return date
+
+    async def SetLastLogin(id):
         pass
 
-    def SetLastLogin(id):
+    async def IncGameWins(id,gameid):
         pass
 
-    def IncGameWins(id,gameid):
+    async def GetGameWins(id):
         pass
 
-    def GetGameWins(id):
-        pass
-
-    def GetChipWLRatio(id):
+    async def GetChipWLRatio(id):
         pass
 
 

@@ -51,7 +51,7 @@ class BlackJackHandler(commands.Cog):
     @app_commands.command(name="blackjack",description="play a game of blackjack!")
     @app_commands.describe(wager="How many chips you are betting")
     async def blackjack(self, interaction: discord.Interaction, wager:app_commands.Range[int, 2, 1000000]):
-        balance = Database.GetBalance(interaction.user.id)
+        balance = await Database.GetBalance(interaction.user.id)
 
         if balance < wager:
             await interaction.response.send_message(content=f"You do not have enough chips for that!\nBalance: {balance}",ephemeral=True)

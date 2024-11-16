@@ -8,6 +8,7 @@ pic.rectangle((45,45),620,300,outline="#ffffff")
 pic.rectangle((40,540),630,310,outline="#ffffff")
 pic.rectangle((45,545),620,300,outline="#ffffff")
 #cards = 190x270
+#handtemp.png = 590x270
 #white ring 1 = 200x280
 #white ring 2 = 210x290 
 #Spacing = 40px                 290x370

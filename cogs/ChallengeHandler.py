@@ -57,12 +57,14 @@ class ChallengeHandler(commands.Cog):
         wagermsg = ""
         wagervalue = ""
         gameChoice = None
-        player1_bal = Database.GetBalance(player1.id)
-        player2_bal = Database.GetBalance(player2.id)
         if wager == 1:
+            player1_bal = await Database.GetBalance(player1.id)
+            player2_bal = await Database.GetBalance(player2.id)
             wagermsg = " for **1 chip**"
             wagervalue = "1 chip"
         elif wager >= 2:
+            player1_bal = await Database.GetBalance(player1.id)
+            player2_bal = await Database.GetBalance(player2.id)
             wagermsg = f" for **{wager} chips**"
             wagervalue = f"{wager} chips"
 
@@ -112,14 +114,14 @@ class ChallengeHandler(commands.Cog):
                 if winner.id == player1.id:
                     player1_bal += wager
                     player2_bal -= wager
-                    Database.SetBalance(player1.id, player1_bal)
-                    Database.SetBalance(player2.id, player2_bal)
+                    await Database.SetBalance(player1.id, player1_bal)
+                    await Database.SetBalance(player2.id, player2_bal)
                     gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
                 else:
                     player1_bal -= wager
                     player2_bal += wager
-                    Database.SetBalance(player1.id, player1_bal)
-                    Database.SetBalance(player2.id, player2_bal)
+                    await Database.SetBalance(player1.id, player1_bal)
+                    await Database.SetBalance(player2.id, player2_bal)
                     gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
 
             ##Send final game announcement msg    

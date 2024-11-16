@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix=".",intents=intents)
 #Notify for bot status
 @bot.event
 async def on_ready():
-    print(f'{bot.user} is online!')
+    print(f'\n\n{bot.user} is online!')
 
 #Load cogs
 async def load():
