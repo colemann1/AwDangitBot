@@ -110,8 +110,16 @@ class ChallengeHandler(commands.Cog):
             ##Display balance changes
             if wager != 0 and winner is not None:
                 if winner.id == player1.id:
+                    player1_bal += wager
+                    player2_bal -= wager
+                    Database.SetBalance(player1.id, player1_bal)
+                    Database.SetBalance(player2.id, player2_bal)
                     gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
                 else:
+                    player1_bal -= wager
+                    player2_bal += wager
+                    Database.SetBalance(player1.id, player1_bal)
+                    Database.SetBalance(player2.id, player2_bal)
                     gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
 
             ##Send final game announcement msg    
