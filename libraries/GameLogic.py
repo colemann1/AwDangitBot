@@ -1,4 +1,5 @@
 import random
+from easy_pil import Editor,Font
 
 class Card:
     """Represents a single playing card."""
@@ -20,7 +21,7 @@ class Card:
         self.suit = suit
         self.value = Card.RANK_VALUES[rank]  # Assign the value based on the rank
         
-    def PNG(self):
+    def png(self):
         match self.suit:
             case 'Hearts':
                 match self.rank:
@@ -133,8 +134,9 @@ class Card:
                     case 'King':
                         return "K-P.png"
                     case 'Ace':
-                        return "A-P.png"   
-    def ToString(self):
+                        return "A-P.png"  
+     
+    def toString(self):
         """Returns a string representation of the card."""
         return f"{self.rank} of {self.suit} (Value: {self.value})"
 
@@ -142,10 +144,12 @@ class Card:
 class Deck:
     """Represents a deck of 52 playing cards."""
     
-    def __init__(self):
+    def __init__(self,num_of_decks=1):
+        self.cards = []
         """Initializes the deck with 52 cards."""
-        self.cards = [Card(rank, suit) for suit in Card.SUITS for rank in Card.RANKS]
-        self.shuffle()
+        for _ in range(num_of_decks):
+            self.cards += [Card(rank, suit) for suit in Card.SUITS for rank in Card.RANKS]
+            self.shuffle()
 
     def shuffle(self):
         """Shuffles the deck."""
@@ -175,12 +179,11 @@ class Deck:
 
     def __repr__(self):
         """Returns a string representation of the deck using the cards' ToString method."""
-        return f"Deck of {len(self.cards)} cards: " + ", ".join(card.ToString() for card in self.cards)
+        return f"Deck of {len(self.cards)} cards: " + ", ".join(card.toString() for card in self.cards)
 
-class GameLogic():
+class GameLogic:
 
-
-    def RockPaperScissors(choice1, choice2,user1,user2):
+    def rockPaperScissors(choice1, choice2,user1,user2):
         outcome = choice1 - choice2
         if outcome == 0:
             return None
@@ -193,13 +196,13 @@ class BlackjackGame:
     """A Blackjack game with splitting and insurance options."""
 
     def __init__(self):
-        self.deck = Deck()
-        self.player_hand = []
+        self.deck = Deck(8)
         self.split_hand = None  # For splitting
-        self.dealer_hand = []
-        self.insurance_taken = False
+        self.player_hand = self.deck.deal_hand(2)
+        self.dealer_hand = self.deck.deal_hand(2)
+        # [Card('King',"Hearts"),Card("Ace","Spades")]
 
-    def calculate_hand_value(self, hand):
+    def hand_value(self, hand):
         """Calculates the value of a hand, handling the Ace's dual value."""
         value = sum(card.value for card in hand)
         aces = sum(1 for card in hand if card.rank == 'Ace')
@@ -208,25 +211,40 @@ class BlackjackGame:
             aces -= 1
         return value
 
-    def display_hand(self, hand, is_dealer=False, hide_first_card=False):
+    def display_hand(self, hand:list[Card], hide_first_card=False):
         """Displays the player's or dealer's hand."""
-        if hide_first_card and is_dealer:
-            print(f"Dealer's hand: [Hidden], {hand[1].ToString()}")
+        cardpos = [200]
+        disp = Editor("imgs/handtemp.png")
+        for _ in range(len(hand)-1):
+            cardpos = [x - 50 for x in cardpos]
+            cardpos.append(cardpos[-1]+100)
+        if hide_first_card:
+            disp.paste(Editor("imgs/BACK.png"), (cardpos[0],0))
+            disp.paste(Editor("imgs/" + hand[1].png()), (cardpos[1],0))
         else:
-            hand_type = "Dealer's" if is_dealer else "Player's"
-            print(f"{hand_type} hand: {', '.join(card.ToString() for card in hand)}")
+            for i in range(len(hand)):
+                disp.paste(Editor("imgs/" + hand[i].png()), (cardpos[i],0))
+        return disp
+
+    def generate_board(self, username, hide_dealer=True):
+        pic = Editor("imgs/background.png")
+        pic.paste(self.display_hand(self.dealer_hand,hide_first_card=hide_dealer), (60,60))
+        pic.paste(self.display_hand(self.player_hand), (60,560))
+        if hide_dealer==True:
+            pic.text(position=(355,360),text=f"Dealer's Hand: {self.dealer_hand[1].value}+",align="center",color="#ffffff",font=Font.poppins(size=50))
+        else:
+            pic.text(position=(355,360),text=f"Dealer's Hand: {self.hand_value(self.dealer_hand)}",align="center",color="#ffffff",font=Font.poppins(size=50))
+        pic.text(position=(355,480),text=f"{username}'s Hand: {self.hand_value(self.player_hand)}",align="center",color="#ffffff",font=Font.poppins(size=50))
+        pic.resize((355,445))
+        return pic
 
     def check_for_blackjack(self, hand):
         """Checks if a hand has a Blackjack (value of 21 with 2 cards)."""
-        return len(hand) == 2 and self.calculate_hand_value(hand) == 21
+        return len(hand) == 2 and self.hand_value(hand) == 21
 
     def play_game(self):
         """Plays a single round of Blackjack."""
         print("Welcome to Blackjack with Splitting and Insurance!\n")
-
-        # Initial deal
-        self.player_hand = self.deck.deal_hand(2)
-        self.dealer_hand = self.deck.deal_hand(2)
 
         # Display hands
         self.display_hand(self.player_hand)
@@ -282,12 +300,12 @@ class BlackjackGame:
         # Dealer's turn
         print("\nDealer's turn...")
         self.display_hand(self.dealer_hand, is_dealer=True)
-        while self.calculate_hand_value(self.dealer_hand) < 17:
+        while self.hand_value(self.dealer_hand) < 17:
             print("Dealer hits.")
             self.dealer_hand.append(self.deck.deal_card())
             self.display_hand(self.dealer_hand, is_dealer=True)
 
-        dealer_value = self.calculate_hand_value(self.dealer_hand)
+        dealer_value = self.hand_value(self.dealer_hand)
         print(f"\nDealer's final hand value: {dealer_value}")
 
         # Determine the outcome for each hand
@@ -298,7 +316,7 @@ class BlackjackGame:
     def play_hand(self, hand):
         """Handles the play for a single hand."""
         while True:
-            value = self.calculate_hand_value(hand)
+            value = self.hand_value(hand)
             print(f"\nCurrent hand value: {value}")
             if value > 21:
                 print("Bust! You lose this hand.")
@@ -313,14 +331,13 @@ class BlackjackGame:
                 print("Invalid input. Please enter 'H' to Hit or 'S' to Stand.")
         return True
 
-    def determine_winner(self, hand, hand_name):
-        """Determines the winner for a specific hand."""
-        player_value = self.calculate_hand_value(hand)
-        dealer_value = self.calculate_hand_value(self.dealer_hand)
-        print(f"\n{hand_name} value: {player_value}")
-        if dealer_value > 21 or player_value > dealer_value:
-            print(f"{hand_name} wins!")
+    def determine_winner(self):
+        """Determines the winner of the game"""
+        player_value = self.hand_value(self.player_hand)
+        dealer_value = self.hand_value(self.dealer_hand)
+        if player_value > dealer_value:
+            return True ##player wins
         elif dealer_value > player_value:
-            print(f"{hand_name} loses!")
+            return False ##dealer wins
         else:
-            print(f"{hand_name} ties!")
+            return None ##tie
