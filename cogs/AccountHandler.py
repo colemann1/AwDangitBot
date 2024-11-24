@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from libraries.ApiClient import Database
 from datetime import datetime, timedelta
+from libraries.ApiClient import Database, UserInfo
 
 
 class AccountHandler(commands.Cog):
@@ -13,6 +14,18 @@ class AccountHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print("AccountHandler is active")
+
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction):
+        if interaction.command:
+            print(f"Command executed by: {interaction.user.id}")
+            async for session in Database.get_session():
+                async with session.begin():
+                    user = await session.get(Database.UserInfo, interaction.user.id)
+                    if user:
+                        user.LastLogin = datetime.utcnow()
+                        print(f"Updated LastLogin for: {interaction.user.id}")
+
 
     @app_commands.command(name="balance",description="Checks your balance")
     async def balance(self, interaction: discord.Interaction):
