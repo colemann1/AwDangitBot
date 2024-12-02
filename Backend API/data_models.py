@@ -14,7 +14,8 @@ class UserInfo(Base):
     TotalChipsGained = Column(Integer, default=0)
     TotalChipsLost = Column(Integer, default=0)
     LastLogin = Column(String)  
-    GamesWon = Column(Integer, default=0, nullable=False)
+    RPSGamesWon = Column(Integer, default=0, nullable=False)
+    BJGamesWon = Column(Integer, default=0, nullable=False)
 
 # Pydantic models
 

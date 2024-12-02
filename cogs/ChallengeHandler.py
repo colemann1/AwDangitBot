@@ -51,12 +51,16 @@ class ChallengeHandler(commands.Cog):
     @app_commands.command(name="challenge",description="Challenge a user to a game!")
     @app_commands.describe(user="The user being challenged",wager="How many chips you are betting")
     async def challenge(self, interaction: discord.Interaction, user: discord.User, wager:app_commands.Range[int, 0, 1000000]=0):
+        await interaction.response.send_message("Checking balances...",ephemeral=True)
         player1 = interaction.user
         player2 = user
         winner:discord.User = None
         wagermsg = ""
         wagervalue = ""
         gameChoice = None
+        gameid = None
+        player1_bal = 0
+        player2_bal = 0
         if wager == 1:
             player1_bal = await Database.GetBalance(player1.id)
             player2_bal = await Database.GetBalance(player2.id)
@@ -70,21 +74,21 @@ class ChallengeHandler(commands.Cog):
 
         ##Error checks
         if interaction.user.id == user.id:
-            await interaction.response.send_message(content="You cannot challenge yourself!",ephemeral=True)
+            await interaction.edit_original_response(content="You cannot challenge yourself!")
             return
         elif user.bot:
-            await interaction.response.send_message(content="You cannot challenge a bot!",ephemeral=True)
+            await interaction.edit_original_response(content="You cannot challenge a bot!")
             return
         elif player1_bal < wager:
-            await interaction.response.send_message(content=f"You do not have enough chips for that!\nBalance: {player1_bal}",ephemeral=True)
+            await interaction.edit_original_response(content=f"You do not have enough chips for that!\nBalance: {player1_bal}")
             return
         elif player2_bal < wager:
-            await interaction.response.send_message(content=f"{player2.display_name} does not have enough chips for that!",ephemeral=True)
+            await interaction.edit_original_response(content=f"{player2.display_name} does not have enough chips for that!")
             return
 
         ##First menu
         gameChoiceView = ChallengeGamesList()
-        await interaction.response.send_message(content=f"Challenging {player2.display_name}{wagermsg}, what game will you play?", view=gameChoiceView, ephemeral=True)
+        await interaction.edit_original_response(content=f"Challenging {player2.display_name}{wagermsg}, what game will you play?", view=gameChoiceView)
         ##First menu success
         if await gameChoiceView.wait() == False:
             gameChoice = gameChoiceView.gameChoice
@@ -95,6 +99,7 @@ class ChallengeHandler(commands.Cog):
         if await challengeAcceptView.wait() == False:
             ##GAME SELECTION LOGIC
             if gameChoice == "Rock Paper Scissors":
+                gameid = "RPS"
                 rpsEmbed = discord.Embed(title="Rock Paper Scissors!",color=0xaf7ffb,description=wagermsg)
                 rpsEmbed.add_field(name=f"{player1.display_name}: thinking...",value="",inline=False)
                 rpsEmbed.add_field(name=f"{player2.display_name}: thinking...",value="",inline=False)
@@ -114,18 +119,22 @@ class ChallengeHandler(commands.Cog):
                 if winner.id == player1.id:
                     player1_bal += wager
                     player2_bal -= wager
+                    gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
+                    await interaction.channel.send(content=f"## {gameChoice}!\n**{player1.mention}** vs **{player2.mention}**",embed=gameResults)
                     await Database.SetBalance(player1.id, player1_bal)
                     await Database.SetBalance(player2.id, player2_bal)
-                    gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player2.display_name}: -{wagervalue}")
+                    await Database.IncGameWins(player1.id,gameid)
                 else:
                     player1_bal -= wager
                     player2_bal += wager
+                    gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
+                    await interaction.channel.send(content=f"## {gameChoice}!\n**{player1.mention}** vs **{player2.mention}**",embed=gameResults)
                     await Database.SetBalance(player1.id, player1_bal)
                     await Database.SetBalance(player2.id, player2_bal)
-                    gameResults.add_field(name="",value=f"{winner.display_name}: +{wagervalue}\n{player1.display_name}: -{wagervalue}")
-
+                    await Database.IncGameWins(player2.id,gameid)
+            else:
             ##Send final game announcement msg    
-            await interaction.channel.send(content=f"## {gameChoice}!\n**{player1.mention}** vs **{player2.mention}**",embed=gameResults)
+                await interaction.channel.send(content=f"## {gameChoice}!\n**{player1.mention}** vs **{player2.mention}**",embed=gameResults)
 
 
 

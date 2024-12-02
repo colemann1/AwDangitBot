@@ -22,6 +22,8 @@ class BlackjackHandler(commands.Cog):
         insurancevalue = ""
 
         async def GameEnd(mult):
+            if mult > 1:
+                await Database.IncGameWins(interaction.user.id,"BJ")
             await Database.SetBalance(interaction.user.id,(blackjack.balance+round(blackjack.wager*mult)))
 
         ##Error checks

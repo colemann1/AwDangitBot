@@ -17,12 +17,11 @@ class Database:
     async def SetLastLogin(id):
         requests.patch(address + f"/lastlogin/{id}")
 
-    ##NEED TO ADD MULTIPLE GAME FOR DATABASE
     async def IncGameWins(id,gameid):
-        requests.patch(address + f"/gamewins/{id}/increment")
+        requests.patch(address + f"/gamewins/{id}/{gameid}/increment")
 
     async def GetGameWins(id,gameid):
-        return int(requests.get(address + f"/gamewins/{id}").text)
+        return int(requests.get(address + f"/gamewins/{id}/{gameid}").text)
 
     async def GetChipWLRatio(id):
         return int(requests.get(address + f"/chipwlr/{id}").text)

@@ -60,17 +60,25 @@ async def SetLastLogin(UserID: str):
         user.Chips += 10
         session.commit()
     
-@app.patch("/gamewins/{UserID}/increment")
-async def IncGameWins(UserID: str):
+@app.patch("/gamewins/{UserID}/{GameID}/increment")
+async def IncGameWins(UserID: str, GameID: str):
         user = get_or_create_user(UserID)
-        user.GamesWon += 1
-        await session.commit()
+        match GameID:
+            case "RPS":
+                user.RPSGamesWon += 1
+            case "BJ":
+                user.BJGamesWon += 1
+        session.commit()
 
-@app.get("/gamewins/{UserID}")
-async def GetGameWins(UserID: str):
+@app.get("/gamewins/{UserID}/{GameID}")
+async def GetGameWins(UserID: str, GameID: str):
         user = get_or_create_user(UserID)
-        return user.GamesWon
-
+        match GameID:
+            case "RPS":
+                return user.RPSGamesWon
+            case "BJ":
+                return user.BJGamesWon
+        
 @app.get("/chipwlr/{UserID}")
 async def GetChipWLRatio(UserID: str):
         user = get_or_create_user(UserID)
