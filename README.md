@@ -36,7 +36,7 @@ Gain 10 chips per day with this command
 
 ![Daily command](https://cdn.discordapp.com/attachments/1063539631058079776/1313289996144349244/image.png?ex=674f981e&is=674e469e&hm=92aea03b2f39ecf8c8ce090d5df197de398a75c79052d2f94415f0d3d0d1d442&)
 
-> /challenge
+> /challenge _user [wager]_
 
 Challenge other users to 2 player games! You are able to wager 0 or more chips. Currently only Rock Paper Scissors is implemented.
 
@@ -54,7 +54,7 @@ Classic dueling between 2 players!
 
 
 ### Blackjack
-> /blackjack
+> /blackjack _wager_
 
 Complete single player blackjack in discord, along with a custom table and clean design!
 
