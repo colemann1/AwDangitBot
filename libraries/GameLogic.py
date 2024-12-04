@@ -341,3 +341,108 @@ class BlackjackGame:
             return False ##dealer wins
         else:
             return None ##tie
+
+class Roulette:
+    def __init__(self):
+        # Initialize the Roulette wheel and colors
+        self.roulette_wheel = [0, "00"] + list(range(1, 37))
+        self.colors = {
+            0: "Green", "00": "Green",
+            1: "Red", 2: "Black", 3: "Red", 4: "Black", 5: "Red", 6: "Black",
+            7: "Red", 8: "Black", 9: "Red", 10: "Black", 11: "Black", 12: "Red",
+            13: "Black", 14: "Red", 15: "Black", 16: "Red", 17: "Black", 18: "Red",
+            19: "Red", 20: "Black", 21: "Red", 22: "Black", 23: "Red", 24: "Black",
+            25: "Red", 26: "Black", 27: "Red", 28: "Black", 29: "Black", 30: "Red",
+            31: "Black", 32: "Red", 33: "Black", 34: "Red", 35: "Black", 36: "Red"
+        }
+
+    def spin_roulette(self):
+        """Simulates spinning the roulette wheel and returns the result."""
+        selected_number = random.choice(self.roulette_wheel)
+        selected_color = self.colors[selected_number]
+        print(f"The roulette wheel spun: {selected_number} ({selected_color})")
+        return selected_number, selected_color
+
+    def place_bet(self):
+        """Prompts the user to place a bet and returns the bet type and value."""
+        print("Betting options:")
+        print("1. Bet on a specific number (0, 00, or 1-36)")
+        print("2. Bet on a color (Red or Black)")
+        print("3. Bet on Odd or Even")
+        print("4. Bet on High or Low (1-18 or 19-36)")
+        print("5. Bet on a Column (1st, 2nd, 3rd)")
+        choice = int(input("Enter the type of bet you'd like to place (1-5): "))
+
+        if choice == 1:
+            bet = input("Enter the number you want to bet on (0, 00, or 1-36): ")
+            return "number", bet
+        elif choice == 2:
+            bet = input("Enter the color you want to bet on (Red or Black): ").capitalize()
+            return "color", bet
+        elif choice == 3:
+            bet = input("Enter 'Odd' or 'Even': ").capitalize()
+            return "odd/even", bet
+        elif choice == 4:
+            bet = input("Enter 'Low' (1-18) or 'High' (19-36): ").capitalize()
+            return "high/low", bet
+        elif choice == 5:
+            bet = input("Enter the column ('1st', '2nd', or '3rd'): ").lower()
+            return "column", bet
+        else:
+            print("Invalid bet choice!")
+            return None, None
+
+    def evaluate_bet(self, bet_type, bet, spin_result):
+        """Evaluates the result of the bet against the spin result."""
+        number, color = spin_result
+
+        if bet_type == "number":
+            if str(number) == bet:
+                print("You win! Your number was correct.")
+            else:
+                print("You lose. The number didn't match.")
+        elif bet_type == "color":
+            if color == bet:
+                print("You win! Your color was correct.")
+            else:
+                print("You lose. The color didn't match.")
+        elif bet_type == "odd/even":
+            if number in ["00", 0]:
+                print("You lose. It's neither odd nor even.")
+            elif (number % 2 == 0 and bet == "Even") or (number % 2 == 1 and bet == "Odd"):
+                print("You win! Your choice was correct.")
+            else:
+                print("You lose. The choice didn't match.")
+        elif bet_type == "high/low":
+            if number in ["00", 0]:
+                print("You lose. It's not high or low.")
+            elif (1 <= number <= 18 and bet == "Low") or (19 <= number <= 36 and bet == "High"):
+                print("You win! Your choice was correct.")
+            else:
+                print("You lose. The choice didn't match.")
+        elif bet_type == "column":
+            if number in ["00", 0]:
+                print("You lose. It's not in any column.")
+            elif (number - 1) % 3 == 0 and bet == "1st":
+                print("You win! Your column was correct.")
+            elif (number - 2) % 3 == 0 and bet == "2nd":
+                print("You win! Your column was correct.")
+            elif (number - 3) % 3 == 0 and bet == "3rd":
+                print("You win! Your column was correct.")
+            else:
+                print("You lose. The column didn't match.")
+
+    def play(self):
+        """Main game loop for testing the class independently."""
+        while True:
+            bet_type, bet = self.place_bet()
+            if bet_type is None:
+                continue
+
+            spin_result = self.spin_roulette()
+            self.evaluate_bet(bet_type, bet, spin_result)
+
+            play_again = input("Do you want to play again? (yes or no): ").lower()
+            if play_again != "yes":
+                print("Thanks for playing!")
+                break
