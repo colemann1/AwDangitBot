@@ -140,7 +140,6 @@ class Card:
         """Returns a string representation of the card."""
         return f"{self.rank} of {self.suit} (Value: {self.value})"
 
-
 class Deck:
     """Represents a deck of 52 playing cards."""
     
@@ -242,95 +241,6 @@ class BlackjackGame:
         """Checks if a hand has a Blackjack (value of 21 with 2 cards)."""
         return len(hand) == 2 and self.hand_value(hand) == 21
 
-    def play_game(self):
-        """Plays a single round of Blackjack."""
-        print("Welcome to Blackjack with Splitting and Insurance!\n")
-
-        # Display hands
-        self.display_hand(self.player_hand)
-        self.display_hand(self.dealer_hand, is_dealer=True, hide_first_card=True)
-
-        # Insurance Option
-        if self.dealer_hand[0].rank == 'Ace':
-            print("\nDealer shows an Ace. Would you like to take insurance? (Half your bet)")
-            choice = input("Enter 'Y' for Yes or 'N' for No: ").lower()
-            if choice == 'y':
-                self.insurance_taken = True
-
-        # Check for Blackjack
-        if self.check_for_blackjack(self.dealer_hand):
-            self.display_hand(self.dealer_hand, is_dealer=True)
-            print("\nDealer has Blackjack!")
-            if self.insurance_taken:
-                print("You took insurance. It's a push on your main bet!")
-            else:
-                print("You lose!")
-            return
-
-        if self.check_for_blackjack(self.player_hand):
-            print("\nBlackjack! You win!")
-            return
-
-        # Splitting Option
-        if self.player_hand[0].rank == self.player_hand[1].rank:
-            print("\nYou have two cards of the same rank. Would you like to split? (Requires doubling your bet)")
-            choice = input("Enter 'Y' for Yes or 'N' for No: ").lower()
-            if choice == 'y':
-                self.split_hand = [self.player_hand.pop()]
-                self.player_hand.append(self.deck.deal_card())
-                self.split_hand.append(self.deck.deal_card())
-                print("\nFirst hand:")
-                self.display_hand(self.player_hand)
-                print("\nSecond hand:")
-                self.display_hand(self.split_hand)
-
-        # Play both hands if split
-        if self.split_hand:
-            print("\nPlaying first hand:")
-            if not self.play_hand(self.player_hand):
-                return
-
-            print("\nPlaying second hand:")
-            if not self.play_hand(self.split_hand):
-                return
-        else:
-            if not self.play_hand(self.player_hand):
-                return
-
-        # Dealer's turn
-        print("\nDealer's turn...")
-        self.display_hand(self.dealer_hand, is_dealer=True)
-        while self.hand_value(self.dealer_hand) < 17:
-            print("Dealer hits.")
-            self.dealer_hand.append(self.deck.deal_card())
-            self.display_hand(self.dealer_hand, is_dealer=True)
-
-        dealer_value = self.hand_value(self.dealer_hand)
-        print(f"\nDealer's final hand value: {dealer_value}")
-
-        # Determine the outcome for each hand
-        self.determine_winner(self.player_hand, "Your main hand")
-        if self.split_hand:
-            self.determine_winner(self.split_hand, "Your split hand")
-
-    def play_hand(self, hand):
-        """Handles the play for a single hand."""
-        while True:
-            value = self.hand_value(hand)
-            print(f"\nCurrent hand value: {value}")
-            if value > 21:
-                print("Bust! You lose this hand.")
-                return False
-            move = input("Would you like to [H]it or [S]tand? ").lower()
-            if move == 'h':
-                hand.append(self.deck.deal_card())
-                self.display_hand(hand)
-            elif move == 's':
-                break
-            else:
-                print("Invalid input. Please enter 'H' to Hit or 'S' to Stand.")
-        return True
-
     def determine_winner(self):
         """Determines the winner of the game"""
         player_value = self.hand_value(self.player_hand)
@@ -342,7 +252,7 @@ class BlackjackGame:
         else:
             return None ##tie
 
-class Roulette:
+class RouletteGame:
     def __init__(self):
         # Initialize the Roulette wheel and colors
         self.roulette_wheel = [0, "00"] + list(range(1, 37))
@@ -355,6 +265,7 @@ class Roulette:
             25: "Red", 26: "Black", 27: "Red", 28: "Black", 29: "Black", 30: "Red",
             31: "Black", 32: "Red", 33: "Black", 34: "Red", 35: "Black", 36: "Red"
         }
+        self.result = self.spin_roulette()
 
     def spin_roulette(self):
         """Simulates spinning the roulette wheel and returns the result."""
@@ -363,86 +274,43 @@ class Roulette:
         print(f"The roulette wheel spun: {selected_number} ({selected_color})")
         return selected_number, selected_color
 
-    def place_bet(self):
-        """Prompts the user to place a bet and returns the bet type and value."""
-        print("Betting options:")
-        print("1. Bet on a specific number (0, 00, or 1-36)")
-        print("2. Bet on a color (Red or Black)")
-        print("3. Bet on Odd or Even")
-        print("4. Bet on High or Low (1-18 or 19-36)")
-        print("5. Bet on a Column (1st, 2nd, 3rd)")
-        choice = int(input("Enter the type of bet you'd like to place (1-5): "))
-
-        if choice == 1:
-            bet = input("Enter the number you want to bet on (0, 00, or 1-36): ")
-            return "number", bet
-        elif choice == 2:
-            bet = input("Enter the color you want to bet on (Red or Black): ").capitalize()
-            return "color", bet
-        elif choice == 3:
-            bet = input("Enter 'Odd' or 'Even': ").capitalize()
-            return "odd/even", bet
-        elif choice == 4:
-            bet = input("Enter 'Low' (1-18) or 'High' (19-36): ").capitalize()
-            return "high/low", bet
-        elif choice == 5:
-            bet = input("Enter the column ('1st', '2nd', or '3rd'): ").lower()
-            return "column", bet
-        else:
-            print("Invalid bet choice!")
-            return None, None
-
-    def evaluate_bet(self, bet_type, bet, spin_result):
+    def evaluate_bet(self, bet):
         """Evaluates the result of the bet against the spin result."""
-        number, color = spin_result
+        number, color = self.result
 
-        if bet_type == "number":
-            if str(number) == bet:
-                print("You win! Your number was correct.")
-            else:
-                print("You lose. The number didn't match.")
-        elif bet_type == "color":
-            if color == bet:
-                print("You win! Your color was correct.")
-            else:
-                print("You lose. The color didn't match.")
-        elif bet_type == "odd/even":
-            if number in ["00", 0]:
-                print("You lose. It's neither odd nor even.")
-            elif (number % 2 == 0 and bet == "Even") or (number % 2 == 1 and bet == "Odd"):
-                print("You win! Your choice was correct.")
-            else:
-                print("You lose. The choice didn't match.")
-        elif bet_type == "high/low":
-            if number in ["00", 0]:
-                print("You lose. It's not high or low.")
-            elif (1 <= number <= 18 and bet == "Low") or (19 <= number <= 36 and bet == "High"):
-                print("You win! Your choice was correct.")
-            else:
-                print("You lose. The choice didn't match.")
-        elif bet_type == "column":
-            if number in ["00", 0]:
-                print("You lose. It's not in any column.")
-            elif (number - 1) % 3 == 0 and bet == "1st":
-                print("You win! Your column was correct.")
-            elif (number - 2) % 3 == 0 and bet == "2nd":
-                print("You win! Your column was correct.")
-            elif (number - 3) % 3 == 0 and bet == "3rd":
-                print("You win! Your column was correct.")
-            else:
-                print("You lose. The column didn't match.")
-
-    def play(self):
-        """Main game loop for testing the class independently."""
-        while True:
-            bet_type, bet = self.place_bet()
-            if bet_type is None:
-                continue
-
-            spin_result = self.spin_roulette()
-            self.evaluate_bet(bet_type, bet, spin_result)
-
-            play_again = input("Do you want to play again? (yes or no): ").lower()
-            if play_again != "yes":
-                print("Thanks for playing!")
-                break
+        match bet:
+            case bet if bet == "Red" or bet == "Black": ## Color, returns 2x win, 0x lose
+                if color == bet:
+                    return 2
+                else:
+                    return 0
+            case bet if bet == "Odd" or bet == "Even": ## Odd/Even, returns 2x win, 0x lose
+                if number in ["00", 0]:
+                    return 0
+                elif (number % 2 == 0 and bet == "Even") or (number % 2 == 1 and bet == "Odd"):
+                    return 2
+                else:
+                    return 0
+            case bet if bet == "High" or bet == "Low": ## High/Low, returns 2x win, 0x lose
+                if number in ["00", 0]:
+                    return 0
+                elif (1 <= number <= 18 and bet == "Low") or (19 <= number <= 36 and bet == "High"):
+                    return 2
+                else:
+                    return 0
+            case bet if str(bet).startswith("Col"): ## Columns, returns 3x win, 0x lose
+                if number in ["00", 0]:
+                    return 0
+                elif (number - 1) % 3 == 0 and bet == "Col1":
+                    return 3
+                elif (number - 2) % 3 == 0 and bet == "Col2":
+                    return 3
+                elif (number - 3) % 3 == 0 and bet == "Col3":
+                    return 3
+                else:
+                    return 0
+            case bet if int(bet) in list(range(0, 37)) or bet == "00": ## Number, returns 36x win, 0x lose
+                if str(number) == str(bet):
+                    return 36
+                else:
+                    return 0    

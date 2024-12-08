@@ -15,12 +15,13 @@ class AccountHandler(commands.Cog):
 
     @app_commands.command(name="balance",description="Checks your balance")
     async def balance(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Checking Balance...",ephemeral=True)
         balance = await Database.GetBalance(interaction.user.id)
         if balance == 1:
-            await interaction.response.send_message(f"You have a balance of **{balance} chip**",ephemeral=True)
+            await interaction.edit_original_response(content=f"You have a balance of **{balance} chip**")
             return
 
-        await interaction.response.send_message(f"You have a balance of **{balance} chips**",ephemeral=True)
+        await interaction.edit_original_response(content=f"You have a balance of **{balance} chips**")
 
     @app_commands.command(name="daily",description="Get your daily bonus of chips")
     async def daily(self, interaction: discord.Interaction):

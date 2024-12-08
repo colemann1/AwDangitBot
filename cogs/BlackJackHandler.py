@@ -17,6 +17,7 @@ class BlackjackHandler(commands.Cog):
     @app_commands.command(name="blackjack",description="play a game of blackjack!")
     @app_commands.describe(wager="How many chips you are betting")
     async def blackjack(self, interaction: discord.Interaction, wager:app_commands.Range[int, 2, 1000000]):
+        await interaction.response.send_message("Thinking...")
         oldbalance = await Database.GetBalance(interaction.user.id)
         insurance = 0
         insurancevalue = ""
@@ -28,7 +29,8 @@ class BlackjackHandler(commands.Cog):
 
         ##Error checks
         if oldbalance < wager:
-            await interaction.response.send_message(content=f"You do not have enough chips for that!\nBalance: {oldbalance}",ephemeral=True)
+            await interaction.delete_original_response()
+            await interaction.followup.send(content=f"You do not have enough chips for that!\nBalance: {oldbalance}",ephemeral=True)
             return
         oldbalance -= wager
 
@@ -40,13 +42,14 @@ class BlackjackHandler(commands.Cog):
         endfile = discord.File(fp=blackjack.game.generate_board(interaction.user.display_name,hide_dealer=False).image_bytes,filename="blackjack.png")
         endembed = discord.Embed().set_image(url="attachment://blackjack.png")
 
-        ##Send first message without view
-        await interaction.response.send_message(content=blackjack.title,embed=embed, file=file)
+        ##Send first message without view  
+        await interaction.delete_original_response()
+        msg:discord.Message = await interaction.followup.send(content=blackjack.title,embed=embed,file=file)
 
         if blackjack.game.check_for_blackjack(blackjack.game.player_hand): ##User blackjack checks
             if blackjack.game.check_for_blackjack(blackjack.game.dealer_hand):## User+Dealer have blackjack
                 #displays the dealers hand
-                await interaction.edit_original_response(content=blackjack.title,embed=endembed,attachments=[endfile])
+                await msg.edit(content=blackjack.title,embed=endembed,attachments=[endfile])
                 await interaction.followup.send(f"## You got a blackjack, but the dealer did too!\nYour wager has been returned to you.")
                 await GameEnd(1) #return wager
                 return ##END GAME
@@ -83,7 +86,7 @@ class BlackjackHandler(commands.Cog):
                 return ##END GAME
             
         ##Main
-        await interaction.edit_original_response(content=blackjack.title,view=blackjack)
+        await msg.edit(content=blackjack.title,view=blackjack)
         ##DEALERS TURN/LOSS
         if await blackjack.wait() == False:
             if blackjack.bust == True: ##Bust

@@ -1,5 +1,5 @@
 import discord
-from libraries.GameLogic import GameLogic, BlackjackGame
+from libraries.GameLogic import GameLogic, BlackjackGame, RouletteGame
 
 
 
@@ -175,3 +175,125 @@ class BlackjackInsurance(discord.ui.View):
         await interaction.channel.send(content=f"You ignored the insurance.",delete_after=5)
         self.choice = False
         self.stop()
+
+
+# ROULETTE
+class Roulette(discord.ui.View):
+    def __init__(self, user:discord.User):
+        super().__init__()
+        self.user = user
+        self.bet = None
+        self.mult = 0
+        self.game = RouletteGame()
+
+    def spin_wheel(self):
+        self.mult = self.game.evaluate_bet(self.bet)
+
+    @discord.ui.button(label="Red", style=discord.ButtonStyle.primary,row=0,emoji="🟥")
+    async def bet_red(self, interaction:discord.Interaction, button:discord.ui.Button):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
+            return
+        ##Returns 2x wager
+        self.bet = "Red"
+        await interaction.response.defer()
+        await interaction.delete_original_response()
+        self.spin_wheel()
+        self.stop()
+
+    @discord.ui.button(label="Black", style=discord.ButtonStyle.primary,row=0,emoji="⬛")
+    async def bet_black(self, interaction:discord.Interaction, button:discord.ui.Button):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
+            return
+        ##Returns 2x wager
+        self.bet = "Black"
+        await interaction.response.defer()
+        await interaction.delete_original_response()
+        self.spin_wheel()
+        self.stop()
+
+    @discord.ui.button(label="Evens", style=discord.ButtonStyle.primary,row=0,emoji="2️⃣")
+    async def bet_even(self, interaction:discord.Interaction, button:discord.ui.Button):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
+            return
+        ##Returns 2x wager
+        self.bet = "Even"
+        await interaction.response.defer()
+        await interaction.delete_original_response()
+        self.spin_wheel()
+        self.stop()
+
+    @discord.ui.button(label="Odds", style=discord.ButtonStyle.primary,row=0,emoji="3️⃣")
+    async def bet_odd(self, interaction:discord.Interaction, button:discord.ui.Button):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
+            return
+        ##Returns 2x wager
+        self.bet = "Odd"
+        await interaction.response.defer()
+        await interaction.delete_original_response()
+        self.spin_wheel()
+        self.stop()
+
+    @discord.ui.select(
+        placeholder="Other...",
+        options=[
+            discord.SelectOption(label="Low (1-18)",value="Low"),
+            discord.SelectOption(label="High (19-36)",value="High"),
+            discord.SelectOption(label="1st Column",value="Col1"),
+            discord.SelectOption(label="2nd Column",value="Col2"),
+            discord.SelectOption(label="3rd Column",value="Col3"),
+            discord.SelectOption(label="Single Number",value="Number")
+        ]
+    )
+    async def select_chosen(self, interaction:discord.Interaction, select_option:discord.ui.Select):
+        if interaction.user.id != self.user.id:
+            await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
+            return
+        
+        msg = interaction.message
+        if select_option.values[0] == "Number":
+            modal = RouletteNumModal()
+
+            await interaction.response.send_modal(modal)
+            await modal.wait()
+            ##Check if value is valid (0-36, and "00")
+            try:
+                if int(modal.bet) in list(range(0, 37)) or modal.bet == "00":
+                    self.bet = modal.bet
+                else:
+                    raise ValueError
+            except:            
+                await interaction.followup.send("That is not a valid option! Please select a number 0-36 or 00",ephemeral=True)
+                await interaction.edit_original_response(content=msg.content,view=self)
+                return
+        else:
+            self.bet = select_option.values[0]
+            await interaction.response.defer()
+
+        await interaction.delete_original_response()
+        self.spin_wheel()
+        self.stop()
+
+    @discord.ui.button(label="Cheat Sheet", style=discord.ButtonStyle.primary,row=3,emoji="*️⃣")
+    async def cheat_sheet(self, interaction:discord.Interaction, button:discord.ui.Button):
+        await interaction.response.send_message(ephemeral=True,content="This is where the cheat sheet will go! a png of how to bet on roulette.")
+
+class RouletteNumModal(discord.ui.Modal,title="Place Your Bet"):
+    def __init__(self):
+        super().__init__()
+        self.bet = None
+
+    number = discord.ui.TextInput(
+        label="Select the number you are betting on",
+        style=discord.TextStyle.short,
+        placeholder="00, 0-36",
+        required=True,
+        max_length=2,
+        min_length=1
+    )
+    async def on_submit(self, interaction:discord.Interaction):
+        self.bet = self.number.value
+        await interaction.response.defer()
