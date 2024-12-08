@@ -75,16 +75,16 @@ Single player roulette with (nearly) every betting option! Custom UI not integra
 <br>
 
 ## Checklist/Roadmap
-- [x] Discord bot design
-- [X] API and Database
-- [X] Interaction commands
-- [X] Ping and basic features
-- [X] Challenge module
-- [X] Daily Login and Balance
-- [X] Rock Paper Scissors
-- [X] Blackjack
-- [ ] Roulette
-- [ ] Poker
-- [ ] Profile Viewer
-- [ ] Server Rewards
-- [ ] Leaderboards
+- :white_check_mark: Discord bot design
+- :white_check_mark: API and Database
+- :white_check_mark: Interaction commands
+- :white_check_mark: Ping and basic features
+- :white_check_mark: Challenge module
+- :white_check_mark: Daily Login and Balance
+- :white_check_mark: Rock Paper Scissors
+- :white_check_mark: Blackjack
+- :white_check_mark: Roulette
+- :x: Poker
+- :x: Profile Viewer
+- :x: Server Rewards
+- :x: Leaderboards
