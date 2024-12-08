@@ -219,7 +219,7 @@ class Roulette(discord.ui.View):
             await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
             return
         ##Returns 2x wager
-        self.bet = "Even"
+        self.bet = "Evens"
         await interaction.response.defer()
         await interaction.delete_original_response()
         self.spin_wheel()
@@ -231,7 +231,7 @@ class Roulette(discord.ui.View):
             await interaction.response.send_message(f"You are not {self.user.display_name}!",ephemeral=True)
             return
         ##Returns 2x wager
-        self.bet = "Odd"
+        self.bet = "Odds"
         await interaction.response.defer()
         await interaction.delete_original_response()
         self.spin_wheel()
@@ -240,11 +240,11 @@ class Roulette(discord.ui.View):
     @discord.ui.select(
         placeholder="Other...",
         options=[
-            discord.SelectOption(label="Low (1-18)",value="Low"),
-            discord.SelectOption(label="High (19-36)",value="High"),
-            discord.SelectOption(label="1st Column",value="Col1"),
-            discord.SelectOption(label="2nd Column",value="Col2"),
-            discord.SelectOption(label="3rd Column",value="Col3"),
+            discord.SelectOption(label="Low (1-18)",value="Low Numbers"),
+            discord.SelectOption(label="High (19-36)",value="High Numbers"),
+            discord.SelectOption(label="1st Column",value="Column 1"),
+            discord.SelectOption(label="2nd Column",value="Column 2"),
+            discord.SelectOption(label="3rd Column",value="Column 3"),
             discord.SelectOption(label="Single Number",value="Number")
         ]
     )
@@ -256,8 +256,8 @@ class Roulette(discord.ui.View):
         msg = interaction.message
         if select_option.values[0] == "Number":
             modal = RouletteNumModal()
-
             await interaction.response.send_modal(modal)
+            await interaction.edit_original_response(content=msg.content,view=self)
             await modal.wait()
             ##Check if value is valid (0-36, and "00")
             try:
@@ -279,7 +279,9 @@ class Roulette(discord.ui.View):
 
     @discord.ui.button(label="Cheat Sheet", style=discord.ButtonStyle.primary,row=3,emoji="*️⃣")
     async def cheat_sheet(self, interaction:discord.Interaction, button:discord.ui.Button):
-        await interaction.response.send_message(ephemeral=True,content="This is where the cheat sheet will go! a png of how to bet on roulette.")
+        file = discord.File(fp="imgs/roulette-sheet.png",filename="output.png")
+        embed = discord.Embed().set_image(url="attachment://output.png")
+        await interaction.response.send_message(ephemeral=True,content="Here are the betting options!",embed=embed,file=file)
 
 class RouletteNumModal(discord.ui.Modal,title="Place Your Bet"):
     def __init__(self):

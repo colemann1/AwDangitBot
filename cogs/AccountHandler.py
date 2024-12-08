@@ -25,12 +25,14 @@ class AccountHandler(commands.Cog):
 
     @app_commands.command(name="daily",description="Get your daily bonus of chips")
     async def daily(self, interaction: discord.Interaction):
+        await interaction.response.send_message("Checking Time Remaining...",ephemeral=True)
+
         lastlogin: datetime = await Database.GetLastLogin(interaction.user.id)
         today = datetime.now()
 
         diff = today - lastlogin
         if diff >= timedelta(days=1):
-            await interaction.response.send_message(f"You have gained 10 chips! Please wait 1 day for another daily bonus.",ephemeral=True)
+            await interaction.edit_original_response(content=f"You have gained 10 chips! Please wait 1 day for another daily bonus.")
             await Database.SetLastLogin(interaction.user.id)
         else:
             timeleft = (timedelta(days=1) - diff).total_seconds()
@@ -38,11 +40,11 @@ class AccountHandler(commands.Cog):
             if timeleft > 3600:
                 hours_left = timeleft // 3600
                 unit = "hour" if hours_left == 1 else "hours"
-                await interaction.response.send_message(f"You have **{int(hours_left)} {unit}** remaining...",ephemeral=True)
+                await interaction.edit_original_response(content=f"You have **{int(hours_left)} {unit}** remaining...")
             else:
                 minutes_left = timeleft // 60
                 unit = "minute" if minutes_left == 1 else "minutes"
-                await interaction.response.send_message(f"You have **{int(minutes_left)} {unit}** remaining...",ephemeral=True)
+                await interaction.edit_original_response(content=f"You have **{int(minutes_left)} {unit}** remaining...")
 
             
 

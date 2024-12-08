@@ -265,18 +265,23 @@ class RouletteGame:
             25: "Red", 26: "Black", 27: "Red", 28: "Black", 29: "Black", 30: "Red",
             31: "Black", 32: "Red", 33: "Black", 34: "Red", 35: "Black", 36: "Red"
         }
+        self.emojis = {
+            "Green":"🟩",
+            "Black":"⬛",
+            "Red":"🟥"
+        }
         self.result = self.spin_roulette()
 
     def spin_roulette(self):
         """Simulates spinning the roulette wheel and returns the result."""
         selected_number = random.choice(self.roulette_wheel)
         selected_color = self.colors[selected_number]
-        print(f"The roulette wheel spun: {selected_number} ({selected_color})")
-        return selected_number, selected_color
+        selected_emoji = self.emojis[selected_color]
+        return selected_number, selected_color, selected_emoji
 
     def evaluate_bet(self, bet):
         """Evaluates the result of the bet against the spin result."""
-        number, color = self.result
+        number, color, emoji = self.result
 
         match bet:
             case bet if bet == "Red" or bet == "Black": ## Color, returns 2x win, 0x lose
@@ -284,28 +289,28 @@ class RouletteGame:
                     return 2
                 else:
                     return 0
-            case bet if bet == "Odd" or bet == "Even": ## Odd/Even, returns 2x win, 0x lose
+            case bet if bet == "Odds" or bet == "Evens": ## Odd/Even, returns 2x win, 0x lose
                 if number in ["00", 0]:
                     return 0
-                elif (number % 2 == 0 and bet == "Even") or (number % 2 == 1 and bet == "Odd"):
+                elif (number % 2 == 0 and bet == "Evens") or (number % 2 == 1 and bet == "Odds"):
                     return 2
                 else:
                     return 0
-            case bet if bet == "High" or bet == "Low": ## High/Low, returns 2x win, 0x lose
+            case bet if bet == "High Numbers" or bet == "Low Numbers": ## High/Low, returns 2x win, 0x lose
                 if number in ["00", 0]:
                     return 0
-                elif (1 <= number <= 18 and bet == "Low") or (19 <= number <= 36 and bet == "High"):
+                elif (1 <= number <= 18 and bet == "Low Numbers") or (19 <= number <= 36 and bet == "High Numbers"):
                     return 2
                 else:
                     return 0
             case bet if str(bet).startswith("Col"): ## Columns, returns 3x win, 0x lose
                 if number in ["00", 0]:
                     return 0
-                elif (number - 1) % 3 == 0 and bet == "Col1":
+                elif (number - 1) % 3 == 0 and bet == "Column 1":
                     return 3
-                elif (number - 2) % 3 == 0 and bet == "Col2":
+                elif (number - 2) % 3 == 0 and bet == "Column 2":
                     return 3
-                elif (number - 3) % 3 == 0 and bet == "Col3":
+                elif (number - 3) % 3 == 0 and bet == "Column 3":
                     return 3
                 else:
                     return 0

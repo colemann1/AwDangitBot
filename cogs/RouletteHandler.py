@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 from libraries.ApiClient import Database
 from libraries.GameViews import Roulette
-from time import sleep
 
 class RouletteHandler(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -19,13 +18,12 @@ class RouletteHandler(commands.Cog):
     async def roulette(self, interaction: discord.Interaction, wager:app_commands.Range[int, 1, 1000000]):
         await interaction.response.send_message("Thinking...")
         balance = await Database.GetBalance(interaction.user.id)
+        firstwager = wager
         async def GameEnd(mult,balance,wager):
             if mult > 1:
                 await Database.IncGameWins(interaction.user.id,"ROU")
             wager *= mult
-            print(wager)
             balance += wager
-            print(balance)
             await Database.SetBalance(interaction.user.id,balance)
 
         ##Error checks
@@ -35,13 +33,21 @@ class RouletteHandler(commands.Cog):
             return
         balance -= wager
 
+        firstembed = discord.Embed(title="Place your bet",color=0x2a4d3e,description="choose wisely...")
         roulette = Roulette(interaction.user)
         await interaction.delete_original_response()
-        await interaction.followup.send("This is a test",view=roulette)
+        await interaction.channel.send(f"## Roulette!\n{interaction.user.mention} bet {wager} chips!",view=roulette,embed=firstembed)
         if await roulette.wait() == False:
-            await interaction.channel.send(f"GAME COMPLETE, WAGER: {wager}, GAME VALUE: {roulette.game.result}, BET: {roulette.bet}, WIN? {roulette.mult}")
+            ##Ending message
+            if roulette.mult > 1: #win
+                lastembed = discord.Embed(title="The Wheel has been spun...",color=0x2a4d3e,description=f"## {roulette.game.result[2]} {roulette.game.result[0]}\n### You bet on {roulette.bet}\n**You Win!**")
+                lastembed.add_field(name="",value=f"x{roulette.mult} Win Multiplier\n+{wager} chips")
+            else: #lose
+                lastembed = discord.Embed(title="The Wheel has been spun...",color=0x2a4d3e,description=f"## {roulette.game.result[2]} {roulette.game.result[0]}\n### You bet on {roulette.bet}\n**You Lose...**")
+                lastembed.add_field(name="",value=f"-{firstwager} chips")
+            await interaction.channel.send(content=f"## Roulette!\n{interaction.user.mention} bet {wager} chips!",embed=lastembed)
         else: ##TIMEOUT!!
-            await interaction.channel.send("TIMEOUT!!")
+            await interaction.channel.send(content=f"{interaction.user.mention}, you took too long to respond!\n-{firstwager} chips")
         await GameEnd(roulette.mult,balance,wager)
 
     

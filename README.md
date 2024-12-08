@@ -61,6 +61,17 @@ Complete single player blackjack in discord, along with a custom table and clean
 ![Blackjack](https://cdn.discordapp.com/attachments/1063539631058079776/1313340743313526814/image.png?ex=674fc761&is=674e75e1&hm=4b9c4767165feb7fa85547759073cc1e4ab712481193353ed8dd3beddd16ddb5&)
 ![Blackjack2](https://cdn.discordapp.com/attachments/1063539631058079776/1313341081026297877/image.png?ex=674fc7b2&is=674e7632&hm=4d7cf049c04fdb20c28dbc5f232e33e568f4a1c9b59355528d5b515745c85651&)
 
+
+### Roulette
+> /roulette _wager_
+
+Single player roulette with (nearly) every betting option! Custom UI not integrated.
+
+![Roulette](https://cdn.discordapp.com/attachments/1063539631058079776/1315446531700297779/image.png?ex=6757708c&is=67561f0c&hm=56eeb8817dfdf4454ebaaae669275e9a792353d284ad4443c7c432660fcaa4ff&)
+![RouletteDropdown](https://cdn.discordapp.com/attachments/1063539631058079776/1315446621823307806/image.png?ex=675770a2&is=67561f22&hm=25375a1d7dcab7ffbfbc8a00205cef6232ab7b799fb3f345b1baff90d2c9a7b7&)
+![RouletteNumberSelect](https://cdn.discordapp.com/attachments/1063539631058079776/1315447031590031500/image.png?ex=67577104&is=67561f84&hm=a2f6b9c55e7cb458b48a4165bd61aa2f23654b61fcbc50d6f7c4bf924c5501a6&)
+![RouletteWin](https://cdn.discordapp.com/attachments/1063539631058079776/1315447123990286336/image.png?ex=6757711a&is=67561f9a&hm=6005b5d5a15cb8310690a183deb75e034aa33758fa7e50918ed4df6377eb6f64&)
+
 <br>
 
 ## Checklist/Roadmap
